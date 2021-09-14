@@ -1,6 +1,6 @@
 const express = require("express");
 const { nullResponseObj, getResponseObj } = require("./utils/responseUtils.js");
-// const routes = require("./routes/index.js");
+const routes = require("./routes/index.js");
 const ExtendedError = require("./lib/errors/extendedError.js");
 
 module.exports = (deps) => {
@@ -45,14 +45,13 @@ module.exports = (deps) => {
     next();
   });
 
-//   Object.keys(routes).forEach((route) => {
-//     app.use(`/${route}`, routes[route]({
-//       logger: getLogger({
-//         module: `routes/${route}`,
-//       }),
-//       schedulers,
-//     }));
-//   });
+  Object.keys(routes).forEach((route) => {
+    app.use(`/${route}`, routes[route]({
+      logger: getLogger({
+        tag: `routes/${route}`,
+      }),
+    }));
+  });
 
   app.use((error, req, res, next) => {
     errLogger.error({
