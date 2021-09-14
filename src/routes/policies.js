@@ -17,8 +17,10 @@ const getPoliciesRouter = (deps) => {
     const policiesRouter = express.Router();
 
     policiesRouter.post('/sheet/upload', uploadToDisk.single('sheet'), async(req,res,next) => {
-        logger.info(req.file.path);
-        console.log(req.file);
+        logger.info({
+            msg: "File upload received",
+            file: req.file,
+        });
         res.locals.responseObj = getResponseObj(200,{
             message: "Upload accepted",
             filename: req.file.filename,
