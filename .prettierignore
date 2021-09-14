@@ -1,0 +1,9 @@
+# Ignore built ts files
+dist/**/*
+
+# Ignore artifacts:
+build
+coverage
+
+#node_modules
+node_modules
