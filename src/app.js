@@ -7,11 +7,11 @@ module.exports = (deps) => {
   const { getLogger, db } = deps;
 
   const errLogger = getLogger({
-    module: "error-handler",
+    tag: "error-handler",
   })
 
   const requestsLogger = getLogger({
-    module: "requests",
+    tag: "requests",
   })
 
   const app = express();
@@ -47,9 +47,7 @@ module.exports = (deps) => {
 
   Object.keys(routes).forEach((route) => {
     app.use(`/${route}`, routes[route]({
-      logger: getLogger({
-        tag: `routes/${route}`,
-      }),
+      getLogger,
     }));
   });
 

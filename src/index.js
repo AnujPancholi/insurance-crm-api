@@ -66,10 +66,11 @@ const startServer = (deps) => {
 
             process
             .on("unhandledRejection", (reason, p) => {
-            anomalyLogger.error("Unhandled Rejection at Promise", p);
+                console.error(p)
+            anomalyLogger.error({msg: "Unhandled Rejection at Promise"});
             })
             .on("uncaughtException", (err) => {
-            anomalyLogger.error("Uncaught Exception thrown");
+            anomalyLogger.error(`Uncaught Exception thrown: ${err.message}`);
             processCleanup();
             process.exit(1);
             })
