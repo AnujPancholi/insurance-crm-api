@@ -12,6 +12,7 @@ const {
     INGESTION_SHEET_MIMETYPE_CONFIG,
 } = require('../lib/sheets/ingestionSheetConfig.js');
 const spawnSheetWorker = require('../lib/workers/spawnSheetDataWorker.js');
+const Joi = require('joi');
 
 const uploadSheetToDisk = (deps) => {
     const {
@@ -44,6 +45,11 @@ const getPoliciesRouter = (deps) => {
     const {
         getLogger,
     } = deps;
+
+    const paginationParamsSchema = Joi.object({
+        pageno: Joi.number().min(1),
+        pagesize: Joi.number().min(1).max(2000),
+    }).unknown(true);
 
     const logger = getLogger({
         tag: "policies",
@@ -79,15 +85,53 @@ const getPoliciesRouter = (deps) => {
         next();
     })
 
-    policiesRouter.post('/test',async(req,res,next) => {
-        await req.db.collection('test').insertOne({
-            "foo": "bar",
-        })
-        res.locals.responseObj = getResponseObj(200,{
-            message: "written",
-        });
+    policiesRouter.get('/aggregate/users',async(req,res,next) => {
 
-        next();
+        try {
+
+            const queryParamsValidationResult = paginationParamsSchema.validate(req.query);
+
+            if(queryParamsValidationResult.error){
+                throw new ExtendedError(`Invalid query params: ${queryParamsValidationResult.error.message}`,400);
+            }
+
+            const pageno = parseInt(req.query.pageno) || 1;
+            const pagesize = parseInt(req.query.pagesize) || 2000;
+
+            const aggregationResult = await req.db.collection('policies').aggregate([{
+                $group: {
+                    "_id": "$user_name",
+                    policies: {
+                        $push: "$$ROOT",
+                        }
+                        
+                    }
+                },{
+                    $sort: {
+                        "_id": 1
+                        }
+                    },{
+                        $project: {
+                            "user_name": "$_id",
+                            "policies": 1,
+                            }
+                        },{
+                            $skip: (pageno-1)*pagesize,
+                        },{
+                            $limit: pagesize,
+                        }]).toArray();
+
+             res.locals.responseObj = getResponseObj(200,{
+                 aggregationResult,
+             });
+
+             next();
+
+        } catch (e) {
+            logger.error(`Error: ${e.message}`);
+            next(e);
+        }
+
     })
 
     return policiesRouter;
