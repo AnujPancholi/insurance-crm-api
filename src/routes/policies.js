@@ -99,7 +99,7 @@ const getPoliciesRouter = (deps) => {
         filePath: req.file.path,
       });
 
-      res.locals.responseObj = getResponseObj(200, {
+      res.locals.responseObj = getResponseObj(202, {
         message: "Upload accepted",
         filename: req.file.filename,
       });
