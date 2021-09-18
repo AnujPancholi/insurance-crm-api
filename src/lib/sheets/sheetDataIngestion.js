@@ -26,9 +26,10 @@ const readRowWise = (deps) => {
       worksheet.getRow(rowNum).eachCell((cell,colNo) => {
          cols.push(cell.value);
       })
-
+      
+      ++rowNum;
       while(rowNum<=worksheet.actualRowCount){
-         ++rowNum;
+         
          const docObjs = {
             rowNum,
          };
@@ -43,7 +44,7 @@ const readRowWise = (deps) => {
                });
             }
          })
-
+         ++rowNum;
          parentPort.postMessage(docObjs);
          
       }   
@@ -59,8 +60,6 @@ const ingestParsedRowData = (deps) => {
       try {
          for(const collectionName of DATA_INGESTION_SHEET_COLLECTIONS){
             const collectionData = rowData[collectionName];
-            // const collectionIdValue = collectionData._id;
-            // delete collectionData._id;
             await schemas[collectionName].validateAsync(collectionData);
             upsertResults[collectionName] = await db.collection(collectionName).updateOne({
                _id: collectionData._id,
