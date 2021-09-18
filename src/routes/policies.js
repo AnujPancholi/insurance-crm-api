@@ -48,6 +48,28 @@ const getPoliciesRouter = (deps) => {
     pagesize: Joi.number().min(1).max(2000),
   }).unknown(true);
 
+  const policiesCollectionName = "policies";
+
+  const policiesSearchConfig = {
+    minQueryStrLength: 3,
+    fields: {
+      policyno: {
+        path: "_id",
+        searchIndexName: "policies_default_si",
+        defaultFuzzyOpts: {
+          maxEdits: 2,
+        },
+      },
+      username: {
+        path: "user_name",
+        searchIndexName: "policies_default_si",
+        defaultFuzzyOpts: {
+          maxEdits: 2,
+        },
+      },
+    },
+  };
+
   const logger = getLogger({
     tag: "policies",
   });
@@ -103,7 +125,7 @@ const getPoliciesRouter = (deps) => {
       const pagesize = parseInt(req.query.pagesize) || 2000;
 
       const aggregationResult = await req.db
-        .collection("policies")
+        .collection(policiesCollectionName)
         .aggregate([
           {
             $group: {
@@ -137,6 +159,48 @@ const getPoliciesRouter = (deps) => {
         aggregationResult,
       });
 
+      next();
+    } catch (e) {
+      logger.error(`Error: ${e.message}`);
+      next(e);
+    }
+  });
+
+  policiesRouter.get("/search/:fieldName", async (req, res, next) => {
+    try {
+      const fieldName = req.params.fieldName;
+      const queryStr = req.query.q || "";
+
+      if (queryStr.length < policiesSearchConfig.minQueryStrLength) {
+        throw new ExtendedError(
+          `Query must be of at least ${policiesSearchConfig.minQueryStrLength} chars`
+        );
+      }
+
+      const fieldConfig = policiesSearchConfig.fields[fieldName];
+      if (!fieldConfig) {
+        throw new ExtendedError(`Cannot search policies by ${fieldName}`, 400);
+      }
+
+      const searchResults = await req.db
+        .collection(policiesCollectionName)
+        .aggregate([
+          {
+            $search: {
+              index: fieldConfig.searchIndexName,
+              text: {
+                query: queryStr,
+                path: fieldConfig.path,
+                fuzzy: fieldConfig.defaultFuzzyOpts,
+              },
+            },
+          },
+        ])
+        .toArray();
+
+      res.locals.responseObj = getResponseObj(200, {
+        results: searchResults,
+      });
       next();
     } catch (e) {
       logger.error(`Error: ${e.message}`);
