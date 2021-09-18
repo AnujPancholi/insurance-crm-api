@@ -87,24 +87,33 @@ const getPoliciesRouter = (deps) => {
       sheetMimetypeConfig: INGESTION_SHEET_MIMETYPE_CONFIG,
     }).single("sheet"),
     async (req, res, next) => {
-      logger.info({
-        msg: "File upload received",
-        file: req.file,
-      });
+      try {
+        if (!req.file) {
+          throw new ExtendedError("File not found", 400);
+        }
 
-      spawnSheetWorker({
-        logger: sheetWorkerLogger,
-        db: req.db,
-      })({
-        filePath: req.file.path,
-      });
+        logger.info({
+          msg: "File upload received",
+          file: req.file,
+        });
 
-      res.locals.responseObj = getResponseObj(202, {
-        message: "Upload accepted",
-        filename: req.file.filename,
-      });
+        spawnSheetWorker({
+          logger: sheetWorkerLogger,
+          db: req.db,
+        })({
+          filePath: req.file.path,
+        });
 
-      next();
+        res.locals.responseObj = getResponseObj(202, {
+          message: "Upload accepted",
+          filename: req.file.filename,
+        });
+
+        next();
+      } catch (e) {
+        logger.error(`Error: ${e.message}`);
+        next(e);
+      }
     }
   );
 
