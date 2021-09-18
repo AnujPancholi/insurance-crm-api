@@ -102,7 +102,7 @@ const DATA_INGESTION_SHEET_CONFIG = {
        "type": "string"
     },{
         "collection": "users",
-        "keyname": "user_account_name",
+        "keyname": "user_account",
         "type": "string"
     }],
     "email": [{
@@ -114,6 +114,10 @@ const DATA_INGESTION_SHEET_CONFIG = {
        "collection":"users",
        "keyname":"_id",
        "type":"string"
+    },{
+       "collection": "policies",
+       "keyname": "user_name",
+       "type": "string"
     }],
     "city":[{
        "collection":"users",

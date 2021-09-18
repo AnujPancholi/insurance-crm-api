@@ -17,6 +17,7 @@ const spawnSheetDataWorker = (deps) => {
 
     const ingestRowData = ingestParsedRowData({
         db,
+        logger,
     })
 
     return async (data) => {

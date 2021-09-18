@@ -54,6 +54,7 @@ const readRowWise = (deps) => {
 const ingestParsedRowData = (deps) => {
    const {
       db,
+      logger,
    } = deps;
    return async(rowData) => {
       const upsertResults = {};
@@ -61,6 +62,8 @@ const ingestParsedRowData = (deps) => {
          for(const collectionName of DATA_INGESTION_SHEET_COLLECTIONS){
             const collectionData = rowData[collectionName];
             await schemas[collectionName].validateAsync(collectionData);
+
+            logger.info(`Upsert triggered: Rownum:${rowData.rowNum},collection:${collectionName}`)
             upsertResults[collectionName] = await db.collection(collectionName).updateOne({
                _id: collectionData._id,
             },{
@@ -68,9 +71,12 @@ const ingestParsedRowData = (deps) => {
             },{
                upsert: true,
             })
+
+            logger.info(`Upsert complete: Rownum:${rowData.rowNum},collection:${collectionName}`);
          }
    
       } catch(e){
+         logger.error(`Error in ingesting rowdata: RowNum:${rowData.rowNum} : ${e.message}`);
          return {
             rowNum: rowData.rowNum,
             isSuccessful: false,
