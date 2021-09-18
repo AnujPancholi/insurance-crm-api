@@ -8,11 +8,11 @@ module.exports = (deps) => {
 
   const errLogger = getLogger({
     tag: "error-handler",
-  })
+  });
 
   const requestsLogger = getLogger({
     tag: "requests",
-  })
+  });
 
   const app = express();
 
@@ -23,14 +23,13 @@ module.exports = (deps) => {
   );
 
   app.use((req, res, next) => {
-
     requestsLogger.info({
       msg: "Request received",
       method: req.method,
       url: req.url,
       headers: req.headers,
       data: req.body,
-    })
+    });
 
     res.locals.responseObj = nullResponseObj;
     req.db = db;
@@ -46,9 +45,12 @@ module.exports = (deps) => {
   });
 
   Object.keys(routes).forEach((route) => {
-    app.use(`/${route}`, routes[route]({
-      getLogger,
-    }));
+    app.use(
+      `/${route}`,
+      routes[route]({
+        getLogger,
+      })
+    );
   });
 
   app.use((error, req, res, next) => {
@@ -59,7 +61,7 @@ module.exports = (deps) => {
       },
     });
 
-    if(error instanceof ExtendedError){
+    if (error instanceof ExtendedError) {
       res.locals.responseObj = error.responseObj;
     } else {
       res.locals.responseObj = getResponseObj(500, {
@@ -81,7 +83,7 @@ module.exports = (deps) => {
         ...responseObj.headers,
       },
       data: responseObj.data,
-    })
+    });
     res.set(responseObj.headers);
     res.status(responseObj.code).send(responseObj.data);
   });

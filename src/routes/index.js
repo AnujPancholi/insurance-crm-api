@@ -1,5 +1,5 @@
-const getPoliciesRouter = require('./policies.js');
+const getPoliciesRouter = require("./policies.js");
 
 module.exports = {
-    "policies": getPoliciesRouter,
-}
+  policies: getPoliciesRouter,
+};

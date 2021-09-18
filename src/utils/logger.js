@@ -1,7 +1,6 @@
 const logger = require("pino")();
 const { SERVICE_NAME } = require("../config.js");
 
-
 module.exports = (opts) => {
   delete opts.service;
   opts = {
