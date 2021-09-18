@@ -151,6 +151,7 @@ const getPoliciesRouter = (deps) => {
           },
           {
             $project: {
+              _id: 0,
               user_name: "$_id",
               policies: 1,
             },
