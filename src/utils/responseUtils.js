@@ -1,11 +1,13 @@
 module.exports = {
   nullResponseObj: {
-    code: 500,
+    code: 404,
     headers: {},
     data: {
       success: false,
       data: null,
-      error: null,
+      error: {
+        message: "Route not found",
+      },
     },
   },
   getResponseObj: (code = 500, data = {}, headers = {}) => {
